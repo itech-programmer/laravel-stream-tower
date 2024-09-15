@@ -31,6 +31,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
+          dockerfile: docker/Dockerfile
           push: true
           tags: itechprogrammer/stream_tower:latest
           cache-from: type=registry,ref=itechprogrammer/stream_tower:cache
