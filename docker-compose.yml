@@ -1,0 +1,85 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
+        container_name: stream_tower_app
+        ports:
+            - "9000:9000"
+        volumes:
+            - .:/var/www
+        environment:
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_DATABASE: stream_tower
+            DB_USERNAME: ${POSTGRES_USER}
+            DB_PASSWORD: ${POSTGRES_PASSWORD}
+        depends_on:
+            - db
+            - redis
+            - rabbitmq
+            - prometheus
+            - grafana
+        networks:
+            - stream_tower_network
+
+    db:
+        image: postgres:latest
+        container_name: stream_tower_db
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: stream_tower
+        volumes:
+            - db_data:/var/lib/postgresql/data
+        networks:
+            - stream_tower_network
+
+    redis:
+        image: redis:latest
+        container_name: stream_tower_redis
+        volumes:
+            - redis_data:/data
+        networks:
+            - stream_tower_network
+
+    rabbitmq:
+        image: rabbitmq:latest
+        container_name: stream_tower_rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        networks:
+            - stream_tower_network
+
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: stream_tower_prometheus
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+            - "9090:9090"
+        networks:
+            - stream_tower_network
+
+    grafana:
+        image: grafana/grafana:latest
+        container_name: stream_tower_grafana
+        ports:
+            - "3000:3000"
+        environment:
+            GF_SECURITY_ADMIN_PASSWORD: 'admin'
+        depends_on:
+            - prometheus
+        networks:
+            - stream_tower_network
+
+volumes:
+    db_data:
+    redis_data:
+    rabbitmq_data:
+
+networks:
+    stream_tower_network:
