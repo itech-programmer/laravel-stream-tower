@@ -14,11 +14,13 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
-    ffmpeg
+    ffmpeg \
+    libhiredis-dev
 
 # Установить расширения PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg  # Настроить GD для работы с FreeType и JPEG
-RUN docker-php-ext-install gd pdo pdo_mysql pdo_pgsql pgsql   # Установить расширения GD, PDO, MySQL и PostgreSQL
+RUN docker-php-ext-install gd pdo pdo_mysql pdo_pgsql pgsql exif  # Установить расширения GD, PDO, MySQL, PostgreSQL и EXIF
+RUN pecl install redis && docker-php-ext-enable redis  # Установить и подключить расширение Redis
 
 # Установить рабочую директорию
 WORKDIR /var/www
